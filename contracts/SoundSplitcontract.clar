@@ -123,10 +123,10 @@
       metadata-uri: metadata-uri,
       total-earnings: u0,
       is-locked: false,
-      created-at: block-height
+      created-at: stacks-block-height
     })
     (var-set next-track-id (+ track-id u1))
-    (update-user-profile tx-sender)
+    (unwrap! (update-user-profile tx-sender) err-unauthorized)
     (ok track-id)
   )
 )
@@ -209,8 +209,8 @@
       reason: reason,
       proposed-changes: proposed-changes,
       status: "active",
-      created-at: block-height,
-      voting-end: (+ block-height dispute-voting-period),
+      created-at: stacks-block-height,
+      voting-end: (+ stacks-block-height dispute-voting-period),
       votes-for: u0,
       votes-against: u0
     })
@@ -224,7 +224,7 @@
   (let ((dispute (unwrap! (map-get? disputes dispute-id) err-not-found)))
     (asserts! (default-to false (map-get? expert-panel tx-sender)) err-unauthorized)
     (asserts! (is-eq (get status dispute) "active") err-invalid-dispute)
-    (asserts! (<= block-height (get voting-end dispute)) err-voting-period-ended)
+    (asserts! (<= stacks-block-height (get voting-end dispute)) err-voting-period-ended)
     (asserts! (is-none (map-get? dispute-votes {dispute-id: dispute-id, expert: tx-sender})) err-already-voted)
     
     (map-set dispute-votes {dispute-id: dispute-id, expert: tx-sender} vote)
@@ -241,7 +241,9 @@
       
       ;; Auto-resolve if minimum votes reached
       (if (>= (+ new-votes-for new-votes-against) min-expert-votes)
-        (try! (resolve-dispute dispute-id))
+        (begin
+          (try! (resolve-dispute dispute-id))
+          (ok true))
         (ok true)
       )
     )
