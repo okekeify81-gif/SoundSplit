@@ -271,3 +271,80 @@
     (var-set platform-fee new-fee)
     (ok true)
   )
+)
+
+
+;; read only functions
+
+(define-read-only (get-track (track-id uint))
+  (map-get? tracks track-id)
+)
+
+(define-read-only (get-contributor (track-id uint) (contributor principal))
+  (map-get? track-contributors {track-id: track-id, contributor: contributor})
+)
+
+(define-read-only (get-contributor-earnings (track-id uint) (contributor principal))
+  (default-to u0 (map-get? contributor-earnings {track-id: track-id, contributor: contributor}))
+)
+
+(define-read-only (get-dispute (dispute-id uint))
+  (map-get? disputes dispute-id)
+)
+
+(define-read-only (get-user-profile (user principal))
+  (map-get? user-profiles user)
+)
+
+(define-read-only (is-expert (user principal))
+  (default-to false (map-get? expert-panel user))
+)
+
+(define-read-only (get-platform-fee)
+  (var-get platform-fee)
+)
+
+(define-read-only (get-total-contributions (track-id uint))
+  (fold get-contribution-sum (list u0 u1 u2 u3 u4 u5 u6 u7 u8 u9) u0)
+)
+
+;; private functions
+
+(define-private (get-contribution-sum (index uint) (total uint))
+  ;; This is a simplified version - in practice, you'd iterate through actual contributors
+  total
+)
+
+(define-private (distribute-to-contributors (track-id uint) (amount uint))
+  (let ((platform-cut (/ (* amount (var-get platform-fee)) percentage-precision))
+        (remaining-amount (- amount platform-cut)))
+    
+    ;; Transfer platform fee to contract owner
+    (try! (as-contract (stx-transfer? platform-cut tx-sender contract-owner)))
+    
+    ;; Distribute remaining amount to contributors
+    ;; This would iterate through all contributors and distribute based on percentages
+    ;; Simplified for this example
+    (ok true)
+  )
+)
+
+(define-private (resolve-dispute (dispute-id uint))
+  (let ((dispute (unwrap! (map-get? disputes dispute-id) err-not-found)))
+    (let ((status (if (> (get votes-for dispute) (get votes-against dispute)) "resolved" "rejected")))
+      (map-set disputes dispute-id (merge dispute {status: status}))
+      (ok true)
+    )
+  )
+)
+
+(define-private (update-user-profile (user principal))
+  (let ((profile (default-to 
+    {name: u"", reputation-score: u0, total-tracks: u0, total-earnings: u0}
+    (map-get? user-profiles user))))
+    (map-set user-profiles user 
+      (merge profile {total-tracks: (+ (get total-tracks profile) u1)})
+    )
+    (ok true)
+  )
+)
