@@ -123,10 +123,10 @@
       metadata-uri: metadata-uri,
       total-earnings: u0,
       is-locked: false,
-      created-at: block-height
+      created-at: stacks-block-height
     })
     (var-set next-track-id (+ track-id u1))
-    (update-user-profile tx-sender)
+    (unwrap! (update-user-profile tx-sender) err-unauthorized)
     (ok track-id)
   )
 )
@@ -209,8 +209,8 @@
       reason: reason,
       proposed-changes: proposed-changes,
       status: "active",
-      created-at: block-height,
-      voting-end: (+ block-height dispute-voting-period),
+      created-at: stacks-block-height,
+      voting-end: (+ stacks-block-height dispute-voting-period),
       votes-for: u0,
       votes-against: u0
     })
@@ -224,7 +224,7 @@
   (let ((dispute (unwrap! (map-get? disputes dispute-id) err-not-found)))
     (asserts! (default-to false (map-get? expert-panel tx-sender)) err-unauthorized)
     (asserts! (is-eq (get status dispute) "active") err-invalid-dispute)
-    (asserts! (<= block-height (get voting-end dispute)) err-voting-period-ended)
+    (asserts! (<= stacks-block-height (get voting-end dispute)) err-voting-period-ended)
     (asserts! (is-none (map-get? dispute-votes {dispute-id: dispute-id, expert: tx-sender})) err-already-voted)
     
     (map-set dispute-votes {dispute-id: dispute-id, expert: tx-sender} vote)
@@ -241,7 +241,9 @@
       
       ;; Auto-resolve if minimum votes reached
       (if (>= (+ new-votes-for new-votes-against) min-expert-votes)
-        (try! (resolve-dispute dispute-id))
+        (begin
+          (try! (resolve-dispute dispute-id))
+          (ok true))
         (ok true)
       )
     )
@@ -271,3 +273,80 @@
     (var-set platform-fee new-fee)
     (ok true)
   )
+)
+
+
+;; read only functions
+
+(define-read-only (get-track (track-id uint))
+  (map-get? tracks track-id)
+)
+
+(define-read-only (get-contributor (track-id uint) (contributor principal))
+  (map-get? track-contributors {track-id: track-id, contributor: contributor})
+)
+
+(define-read-only (get-contributor-earnings (track-id uint) (contributor principal))
+  (default-to u0 (map-get? contributor-earnings {track-id: track-id, contributor: contributor}))
+)
+
+(define-read-only (get-dispute (dispute-id uint))
+  (map-get? disputes dispute-id)
+)
+
+(define-read-only (get-user-profile (user principal))
+  (map-get? user-profiles user)
+)
+
+(define-read-only (is-expert (user principal))
+  (default-to false (map-get? expert-panel user))
+)
+
+(define-read-only (get-platform-fee)
+  (var-get platform-fee)
+)
+
+(define-read-only (get-total-contributions (track-id uint))
+  (fold get-contribution-sum (list u0 u1 u2 u3 u4 u5 u6 u7 u8 u9) u0)
+)
+
+;; private functions
+
+(define-private (get-contribution-sum (index uint) (total uint))
+  ;; This is a simplified version - in practice, you'd iterate through actual contributors
+  total
+)
+
+(define-private (distribute-to-contributors (track-id uint) (amount uint))
+  (let ((platform-cut (/ (* amount (var-get platform-fee)) percentage-precision))
+        (remaining-amount (- amount platform-cut)))
+    
+    ;; Transfer platform fee to contract owner
+    (try! (as-contract (stx-transfer? platform-cut tx-sender contract-owner)))
+    
+    ;; Distribute remaining amount to contributors
+    ;; This would iterate through all contributors and distribute based on percentages
+    ;; Simplified for this example
+    (ok true)
+  )
+)
+
+(define-private (resolve-dispute (dispute-id uint))
+  (let ((dispute (unwrap! (map-get? disputes dispute-id) err-not-found)))
+    (let ((status (if (> (get votes-for dispute) (get votes-against dispute)) "resolved" "rejected")))
+      (map-set disputes dispute-id (merge dispute {status: status}))
+      (ok true)
+    )
+  )
+)
+
+(define-private (update-user-profile (user principal))
+  (let ((profile (default-to 
+    {name: u"", reputation-score: u0, total-tracks: u0, total-earnings: u0}
+    (map-get? user-profiles user))))
+    (map-set user-profiles user 
+      (merge profile {total-tracks: (+ (get total-tracks profile) u1)})
+    )
+    (ok true)
+  )
+)
