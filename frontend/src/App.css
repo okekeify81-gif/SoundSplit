@@ -1,0 +1,142 @@
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.track-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  border: 1px solid #333;
+  box-shadow: 0 8px 32px rgba(0, 212, 170, 0.1);
+}
+
+.track-card h3 {
+  margin-top: 0;
+  color: #00d4aa;
+  font-size: 1.4rem;
+}
+
+.track-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  color: #ccc;
+}
+
+.earnings-display {
+  background: linear-gradient(45deg, #00d4aa, #00b8a0);
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-locked {
+  background: #4caf50;
+  color: white;
+}
+
+.status-unlocked {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #00d4aa, #00b8a0);
+  color: #000;
+  border: none;
+  font-weight: bold;
+}
+
+.btn-secondary {
+  background: #333;
+  color: white;
+  border: none;
+}
+
+.btn-music {
+  background: linear-gradient(45deg, #9c27b0, #673ab7);
+  color: white;
+  border: none;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #00d4aa;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #00d4aa;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.contributors-list {
+  margin: 1rem 0;
+}
+
+.contributor-item {
+  background: #1a1a1a;
+  margin: 0.5rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #00d4aa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.music-wave {
+  height: 40px;
+  background: linear-gradient(90deg, #00d4aa, #00b8a0, #00d4aa);
+  border-radius: 20px;
+  animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.5); }
+}
+
+.royalty-distribution {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid #00d4aa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
